@@ -71,7 +71,13 @@ a CL pathname satisfying all the specified constraints as per ENSURE-PATHNAME"
        (or (ignore-errors (truename p))
            ;; this is here because trying to find the truename of a directory pathname WITHOUT supplying
            ;; a trailing directory separator, causes an error on some lisps.
-           #+(or clisp gcl) (if-let (d (ensure-directory-pathname p nil)) (ignore-errors (truename d)))))))
+           #+(or clisp gcl) (if-let (d (ensure-directory-pathname p nil)) (ignore-errors (truename d)))
+           ;; On Genera, truename of a directory pathname will probably fail as Genera
+           ;; will merge in a filename/type/version from *default-pathname-defaults* and
+           ;; will try to get the truename of a file that probably doesn't exist.
+           #+genera (when (directory-pathname-p p)
+                      (let ((d (scl:send p :directory-pathname-as-file)))
+                        (ensure-directory-pathname (ignore-errors (truename d)) nil)))))))
 
   (defun safe-file-write-date (pathname)
     "Safe variant of FILE-WRITE-DATE that may return NIL rather than raise an error."
@@ -203,7 +209,7 @@ Subdirectories should NOT be returned.
 override the default at your own risk.
   DIRECTORY-FILES tries NOT to resolve symlinks if the implementation permits this,
 but the behavior in presence of symlinks is not portable. Use IOlib to handle such situations."
-    (let ((dir (pathname directory)))
+    (let ((dir (ensure-directory-pathname directory)))
       (when (logical-pathname-p dir)
         ;; Because of the filtering we do below,
         ;; logical pathnames have restrictions on wild patterns.
@@ -484,7 +490,10 @@ resolving them with respect to GETCWD if the DEFAULTS were relative"
     "call the THUNK in a context where the current directory was changed to DIR, if not NIL.
 Note that this operation is usually NOT thread-safe."
     (if dir
-        (let* ((dir (resolve-symlinks* (get-pathname-defaults (pathname-directory-pathname dir))))
+        (let* ((dir (resolve-symlinks*
+                     (get-pathname-defaults
+                      (ensure-directory-pathname
+                       dir))))
                (cwd (getcwd))
                (*default-pathname-defaults* dir))
           (chdir dir)

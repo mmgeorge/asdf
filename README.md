@@ -150,7 +150,7 @@ Debugging ASDF
 To interactively debug ASDF, you may load it in such a way that `M-.` will work,
 by installing the source code, and running:
 
-    (map () 'load (asdf:input-files :monolithic-concatenate-source-op "asdf"))
+    (map () 'load (asdf:input-files :monolithic-concatenate-source-op "asdf/defsystem"))
 
 To interactively use the `asdf-tools`, you need to either have
 all its dependencies installed and configured.
@@ -167,7 +167,7 @@ Using ASDF internals
 --------------------
 
 If you have to use or extend internal functionality not currently exported by
-ASDF, please contact us and have us negociate a proper, stable, tested interface
+ASDF, please contact us and have us negotiate a proper, stable, tested interface
 that you can actually rely on. Also, please *DO NOT* refer to specific
 subpackages such as `asdf/find-system` from the outside of ASDF, because
 functions may occasionally be moved from one internal package to the other,
@@ -295,4 +295,5 @@ How do I navigate this source tree?
     * This file.
 
 *   [TODO](TODO)
-    * Plenty of ideas for how to further improve ASDF.
+    * Plenty of ideas for how to further improve ASDF
+      (not all of them guaranteed good ideas.)
